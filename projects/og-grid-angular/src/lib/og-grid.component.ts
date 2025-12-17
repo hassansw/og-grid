@@ -8,6 +8,7 @@ import {
     NgZone,
     HostListener,
     ElementRef,
+    OnInit,
 } from '@angular/core';
 
 import {
@@ -37,7 +38,7 @@ import {
     styleUrls: ['./og-grid.component.scss'],
     changeDetection: ChangeDetectionStrategy.OnPush,
 })
-export class OgGridComponent<T = any> implements OnChanges {
+export class OgGridComponent<T = any> implements OnInit, OnChanges {
     @Input() columnDefs: ColumnDef<T>[] = [];
     @Input() rowData: T[] = [];
     @Input() options: Partial<GridOptions<T>> = {};
@@ -53,7 +54,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     groupModel: GroupModelItem[] = [];
     pivotModel: PivotModel = { rowGroupCols: [], valueCols: [], pivotCol: undefined, enabled: false };
     expandedGroups = new Set<string>();
-    private filterInputs: Record<string, { value?: any; valueTo?: any }> = {};
+    filterInputs: Record<string, { value?: any; valueTo?: any }> = {};
     private filterModes: Record<string, 'contains' | 'startsWith' | 'equals'> = {};
     private filterDebounce: Record<string, any> = {};
     private colWidths: Record<string, number> = {};
@@ -122,6 +123,41 @@ export class OgGridComponent<T = any> implements OnChanges {
         };
     }
 
+    ngOnInit(): void {
+        this.setColumns();
+    }
+
+    setColumns() {
+        if (!isArrayValid(this.columnDefs, 0) && isArrayValid(this.rowData, 0)) {
+            this.columnDefs = this.buildColumnDefs(this.rowData);
+        }
+    }
+
+    inferType(val: any) {
+        if (val === null || val === undefined) return 'text';
+        if (typeof val === 'number') return 'number';
+        const d = new Date(val);
+        if (!isNaN(d.getTime()) && /[T:\-\/]/.test(String(val))) return 'date';
+        if (!isNaN(Number(val)) && val !== '') return 'number';
+        return 'text';
+    }
+
+    buildColumnDefs(data: any[]) {
+        if (!data.length) return [];
+        return Object.keys(data[0]).map(k => {
+            let sample = data.find(r => r[k] != null)?.[k];
+            const t = this.inferType(sample);
+            const col: any = {
+                field: k, headerName: k, filter: true, sortable: true, resizable: true,
+                enableRowGroup: true, enablePivot: true, enableValue: true
+            };
+            if (t === 'number') { col.aggFunc = 'sum'; }
+            if (t === 'date') { col.filter = 'agDateColumnFilter'; }
+            return col;
+        });
+    }
+
+
     @HostListener('document:click', ['$event'])
     onDocClick(ev: MouseEvent): void {
         if (!this.menuOpenFor) return;
@@ -134,6 +170,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     }
 
     ngOnChanges(changes: SimpleChanges): void {
+        this.setColumns();
         if (
             changes.columnDefs ||
             changes.rowData ||
@@ -218,6 +255,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     }
 
     toggleRowSelection(row: RowView<T>, ev?: MouseEvent): void {
+        if (!this.showSelectionColumn) return;
         if (this.isGroupRow(row)) return;
         var mode = (this.options && this.options.rowSelection) || 'single';
 
@@ -233,6 +271,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     }
 
     toggleAll(): void {
+        if (!this.showSelectionColumn) return;
         var leaves = this.getLeafRows();
         if (leaves.length === 0) return;
 
@@ -246,6 +285,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     }
 
     get allSelected(): boolean {
+        if (!this.showSelectionColumn) return false;
         var leaves = this.getLeafRows();
         return leaves.length > 0 && this.selected.size === leaves.length;
     }
@@ -253,6 +293,10 @@ export class OgGridComponent<T = any> implements OnChanges {
     renderCell(col: ColumnDef<T>, row: T): any {
         var value = getCellValue(col, row);
         return col.valueFormatter ? col.valueFormatter(value, row) : value;
+    }
+
+    get showSelectionColumn(): boolean {
+        return this.options.showSelection !== false;
     }
 
     onFilterChange(col: ColumnDef<T>, value: any, valueTo?: any): void {
@@ -282,13 +326,19 @@ export class OgGridComponent<T = any> implements OnChanges {
         this.onFilterChange(col, current.value, current.valueTo);
     }
 
-    onTextFilterInput(col: ColumnDef<T>, raw: any): void {
+    onTextFilterInput(col: ColumnDef<T>, raw: any, instant?: boolean): void {
         var colId = String(col.field);
+        this.filterInputs[colId] = this.filterInputs[colId] || {};
+        this.filterInputs[colId].value = raw;
+        if (instant) {
+            this.onFilterChange(col, raw, undefined);
+            return;
+        }
         // debounce per column
         clearTimeout(this.filterDebounce[colId]);
         this.filterDebounce[colId] = setTimeout(() => {
             this.onFilterChange(col, raw, undefined);
-        }, 200);
+        }, 150);
     }
 
     onTextModeChange(col: ColumnDef<T>, mode: 'contains' | 'startsWith' | 'equals'): void {
@@ -387,12 +437,15 @@ export class OgGridComponent<T = any> implements OnChanges {
         this.recompute();
     }
 
-    onPivotToggle(enabled: boolean): void {
-        this.pivotModel = Object.assign({}, this.pivotModel, { enabled });
+    onPivotToggle(enabled: any): void {
+        this.pivotModel = Object.assign({}, this.pivotModel, { enabled: !!enabled });
         this.recompute();
     }
 
-    onPivotConfigChange(_val?: any): void {
+    onPivotConfigChange(val?: any): void {
+        // Ensure undefined when cleared
+        if (val === '' || val === null) val = undefined;
+        this.pivotModel = Object.assign({}, this.pivotModel, { pivotCol: val });
         this.recompute();
     }
 
@@ -516,4 +569,8 @@ function downloadTextFile(content: string, filename: string, mime: string): void
         document.body.removeChild(a);
         (window.URL || (window as any).webkitURL).revokeObjectURL(url);
     }, 0);
+}
+
+const isArrayValid = ($array: any[], $length: number) => {
+    return $array && $array.length > $length ? true : false;
 }

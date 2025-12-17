@@ -16,7 +16,7 @@
     </div>
 
     <div class="og-grid-header">
-        <div class="og-grid-header-cell og-grid-select">
+        <div class="og-grid-header-cell og-grid-select" *ngIf="showSelectionColumn">
             <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" />
         </div>
 
@@ -74,40 +74,46 @@
     </div>
 
     <div class="og-grid-filter" *ngIf="mergedCols.length">
-        <div class="og-grid-filter-cell og-grid-select">
+        <div class="og-grid-filter-cell og-grid-select" *ngIf="showSelectionColumn">
             <button type="button" class="og-grid-btn" (click)="clearFilters()">Clear</button>
         </div>
 
         <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol" [style.width.px]="getColWidth(col)">
             <ng-container [ngSwitch]="col.filter || 'text'">
-                <input *ngSwitchCase="'text'" type="text" placeholder="Filter..."
-                    [value]="getFilterValue(col)" (input)="onTextFilterInput(col, $any($event.target).value)" />
-                <select class="og-grid-filter-mode" *ngSwitchCase="'text'"
-                    [value]="getFilterValue(col, 'min')" hidden></select>
-                <div class="og-grid-filter-mode-row" *ngSwitchCase="'text'">
-                    <select (change)="onTextModeChange(col, $any($event.target).value)">
-                        <option value="contains">Contains</option>
-                        <option value="startsWith">Starts with</option>
-                        <option value="equals">Equals</option>
-                    </select>
-                </div>
+                <ng-container *ngSwitchCase="'text'">
+                    <input type="text" placeholder="Filter..."
+                        [ngModel]="filterInputs[col.field]?.value || ''"
+                        (ngModelChange)="onTextFilterInput(col, $event, true)" />
+                    <div class="og-grid-filter-mode-row">
+                        <select (change)="onTextModeChange(col, $any($event.target).value)">
+                            <option value="contains">Contains</option>
+                            <option value="startsWith">Starts with</option>
+                            <option value="equals">Equals</option>
+                        </select>
+                    </div>
+                </ng-container>
 
                 <div *ngSwitchCase="'number'" class="og-grid-filter-range">
-                    <input type="number" placeholder="Min" [value]="getFilterValue(col, 'min')"
-                        (input)="onRangeInput(col, 'min', $any($event.target).value)" />
-                    <input type="number" data-max placeholder="Max" [value]="getFilterValue(col, 'max')"
-                        (input)="onRangeInput(col, 'max', $any($event.target).value)" />
+                    <input type="number" placeholder="Min"
+                        [ngModel]="filterInputs[col.field]?.value || ''"
+                        (ngModelChange)="onRangeInput(col, 'min', $event)" />
+                    <input type="number" data-max placeholder="Max"
+                        [ngModel]="filterInputs[col.field]?.valueTo || ''"
+                        (ngModelChange)="onRangeInput(col, 'max', $event)" />
                 </div>
 
                 <div *ngSwitchCase="'date'" class="og-grid-filter-range">
-                    <input type="date" placeholder="From" [value]="getFilterValue(col, 'min')"
-                        (input)="onRangeInput(col, 'min', $any($event.target).value)" />
-                    <input type="date" data-max placeholder="To" [value]="getFilterValue(col, 'max')"
-                        (input)="onRangeInput(col, 'max', $any($event.target).value)" />
+                    <input type="date" placeholder="From"
+                        [ngModel]="filterInputs[col.field]?.value || ''"
+                        (ngModelChange)="onRangeInput(col, 'min', $event)" />
+                    <input type="date" data-max placeholder="To"
+                        [ngModel]="filterInputs[col.field]?.valueTo || ''"
+                        (ngModelChange)="onRangeInput(col, 'max', $event)" />
                 </div>
 
                 <input *ngSwitchDefault type="text" placeholder="Filter..."
-                    [value]="getFilterValue(col)" (input)="onFilterChange(col, $any($event.target).value)" />
+                    [ngModel]="filterInputs[col.field]?.value || ''"
+                    (ngModelChange)="onFilterChange(col, $event)" />
             </ng-container>
         </div>
     </div>
@@ -116,7 +122,7 @@
         <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByRow"
             [class.og-grid-row-selected]="isRowSelected(row)"
             [class.og-grid-group-row]="isGroupRow(row)">
-            <div class="og-grid-cell og-grid-select">
+            <div class="og-grid-cell og-grid-select" *ngIf="showSelectionColumn">
                 <ng-container *ngIf="!isGroupRow(row); else groupToggle">
                     <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)" />
                 </ng-container>

@@ -50,6 +50,10 @@ export interface GridOptions<T = any> {
      * Enable multi-column sorting (otherwise single-column).
      */
     multiSort?: boolean;
+    /**
+     * Show selection checkboxes column.
+     */
+    showSelection?: boolean;
 }
 
 export interface ColumnDef<T = any> {
