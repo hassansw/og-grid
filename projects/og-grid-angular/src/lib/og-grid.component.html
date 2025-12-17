@@ -1,0 +1,29 @@
+<div class="og-grid-root">
+    <div class="og-grid-header">
+        <div class="og-grid-header-cell og-grid-select">
+            <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" />
+        </div>
+
+        <div class="og-grid-header-cell" *ngFor="let col of mergedCols; let ci = index"
+            [style.width.px]="col.width || null" (click)="onHeaderClick(col)" [class.og-grid-sortable]="!!col.sortable"
+            title="Click to sort">
+            <span class="og-grid-header-title">
+                {{ col.headerName || (col.field + '') }}
+            </span>
+            <span class="og-grid-sort-ind">{{ getSortIndicator(col) }}</span>
+        </div>
+    </div>
+
+    <div class="og-grid-body">
+        <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByIndex"
+            [class.og-grid-row-selected]="isRowSelected(ri)">
+            <div class="og-grid-cell og-grid-select">
+                <input type="checkbox" [checked]="isRowSelected(ri)" (change)="toggleRowSelection(ri)" />
+            </div>
+
+            <div class="og-grid-cell" *ngFor="let col of mergedCols">
+                {{ renderCell(col, row) }}
+            </div>
+        </div>
+    </div>
+</div>

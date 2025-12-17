@@ -1,0 +1,65 @@
+.og-grid-root {
+    border: 1px solid #ddd;
+    font-family: Arial, Helvetica, sans-serif;
+    font-size: 13px;
+}
+
+.og-grid-header,
+.og-grid-row {
+    display: flex;
+    align-items: center;
+}
+
+.og-grid-header {
+    user-select: none;
+    border-bottom: 1px solid #ddd;
+    background: #f7f7f7;
+    font-weight: 600;
+}
+
+.og-grid-header-cell,
+.og-grid-cell {
+    padding: 6px 8px;
+    border-right: 1px solid #eee;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.og-grid-header-cell:last-child,
+.og-grid-cell:last-child {
+    border-right: none;
+}
+
+.og-grid-sortable {
+    cursor: pointer;
+}
+
+.og-grid-sort-ind {
+    margin-left: 6px;
+    font-size: 11px;
+}
+
+.og-grid-body {
+    max-height: 420px;
+    overflow: auto;
+}
+
+.og-grid-row {
+    border-bottom: 1px solid #f1f1f1;
+}
+
+.og-grid-row:hover {
+    background: #fafafa;
+}
+
+.og-grid-row-selected {
+    background: #e9f2ff;
+}
+
+.og-grid-select {
+    width: 36px;
+    flex: 0 0 36px;
+    display: flex;
+    justify-content: center;
+}

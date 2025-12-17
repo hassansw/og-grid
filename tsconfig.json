@@ -13,6 +13,14 @@
     "downlevelIteration": true,
     "experimentalDecorators": true,
     "moduleResolution": "node",
+    "paths": {
+      "og-grid-core": [
+        "projects/og-grid-core/src/public-api.ts"
+      ],
+      "og-grid-angular": [
+        "projects/og-grid-angular/src/public-api.ts"
+      ]
+    },
     "importHelpers": true,
     "target": "es2017",
     "module": "es2020",
