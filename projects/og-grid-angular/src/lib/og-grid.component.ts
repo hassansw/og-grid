@@ -304,10 +304,11 @@ export class OgGridComponent<T = any> implements OnChanges {
             });
     }
 
-    trackByRow(_i: number, row: RowView<T>): string | number {
-        if (this.isGroupRow(row)) return 'g:' + row.path;
+    trackByRow = (_i: number, row: RowView<T>): string | number => {
+        if (this.isGroupRow(row)) return 'g:' + (row as GroupViewRow<T>).path;
+        // Use index to avoid duplicate keys from object stringification
         return 'r:' + _i;
-    }
+    };
 }
 
 function downloadTextFile(content: string, filename: string, mime: string): void {

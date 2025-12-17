@@ -62,6 +62,7 @@
 .og-grid-header-cell,
 .og-grid-filter-cell,
 .og-grid-cell {
+    flex: 1 0 0;
     padding: 6px 8px;
     border-right: 1px solid #eee;
     white-space: nowrap;
