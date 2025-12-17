@@ -1,5 +1,10 @@
 <div class="og-grid-root">
     <div class="og-grid-groupbar" *ngIf="mergedCols.length">
+        <div class="og-grid-actions">
+            <button type="button" class="og-grid-btn og-grid-pivot-btn" (click)="showPivotPanel = !showPivotPanel">
+                {{ showPivotPanel ? 'Hide Pivot' : 'Show Pivot' }}
+            </button>
+        </div>
         <div class="og-grid-group-label">Group by:</div>
         <div class="og-grid-group-pills">
             <label class="og-grid-pill" *ngFor="let col of mergedCols">
@@ -8,15 +13,10 @@
             </label>
             <button type="button" class="og-grid-btn" (click)="clearGroups()">Clear</button>
         </div>
-        <div class="og-grid-actions">
-            <button type="button" class="og-grid-btn og-grid-pivot-btn" (click)="showPivotPanel = !showPivotPanel">
-                {{ showPivotPanel ? 'Hide Pivot' : 'Show Pivot' }}
-            </button>
-        </div>
     </div>
 
     <div class="og-grid-header">
-        <div class="og-grid-header-cell og-grid-select" *ngIf="showSelectionColumn && showSelection">
+        <div class="og-grid-header-cell og-grid-select" *ngIf="showSelectionColumn && showSelection ">
             <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" />
         </div>
 
@@ -118,9 +118,10 @@
     <div class="og-grid-body">
         <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByRow"
             [class.og-grid-row-selected]="isRowSelected(row)" [class.og-grid-group-row]="isGroupRow(row)">
-            <div class="og-grid-cell og-grid-select" *ngIf="showSelectionColumn && showSelection">
+            <div class="og-grid-cell og-grid-select" *ngIf="showSelectionColumn">
                 <ng-container *ngIf="!isGroupRow(row); else groupToggle">
-                    <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)" />
+                    <input *ngIf="showSelection" type="checkbox" [checked]="isRowSelected(row)"
+                        (change)="toggleRowSelection(row)" />
                 </ng-container>
                 <ng-template #groupToggle>
                     <button type="button" class="og-grid-toggle" (click)="toggleGroupExpand($any(row))">

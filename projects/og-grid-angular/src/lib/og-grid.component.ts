@@ -372,7 +372,9 @@ export class OgGridComponent<T = any> implements OnInit, OnChanges {
     clearFilters(): void {
         this.filterModel = [];
         this.filterInputs = {};
+        this.filterModes = {};
         this.recompute();
+        this.cdr.markForCheck();
     }
 
     clearGroups(): void {
