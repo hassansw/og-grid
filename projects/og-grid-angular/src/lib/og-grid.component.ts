@@ -17,6 +17,7 @@ import {
     SortModelItem,
     FilterModelItem,
     GroupModelItem,
+    PivotModel,
     AggModelItem,
     GroupViewRow,
     RowView,
@@ -24,6 +25,7 @@ import {
     sortRows,
     filterRows,
     groupAndFlattenRows,
+    pivotRows,
     toCsv,
     getCellValue,
 } from 'og-grid-core';
@@ -49,6 +51,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     sortModel: SortModelItem[] = [];
     filterModel: FilterModelItem[] = [];
     groupModel: GroupModelItem[] = [];
+    pivotModel: PivotModel = { rowGroupCols: [], valueCols: [], pivotCol: undefined, enabled: false };
     expandedGroups = new Set<string>();
     private filterInputs: Record<string, { value?: any; valueTo?: any }> = {};
     private filterModes: Record<string, 'contains' | 'startsWith' | 'equals'> = {};
@@ -57,6 +60,7 @@ export class OgGridComponent<T = any> implements OnChanges {
     menuOpenFor: string | null = null;
     private resizeFrame: number | null = null;
     private resizingCol: string | null = null;
+    showPivotPanel = true;
 
     private selected = new Set<T>(); // track by row object references
 
@@ -100,6 +104,13 @@ export class OgGridComponent<T = any> implements OnChanges {
             getExpandedGroups: function () {
                 return Array.from(self.expandedGroups);
             },
+            setPivotModel: function (model: PivotModel) {
+                self.pivotModel = model || { rowGroupCols: [], valueCols: [], pivotCol: undefined, enabled: false };
+                self.recompute();
+            },
+            getPivotModel: function () {
+                return Object.assign({}, self.pivotModel);
+            },
             getSelectedRows: function () {
                 return Array.from(self.selected);
             },
@@ -141,7 +152,13 @@ export class OgGridComponent<T = any> implements OnChanges {
         var filtered = filterRows(this.rowData || [], this.mergedCols, this.filterModel);
         var sorted = sortRows(filtered, this.mergedCols, this.sortModel);
 
-        if (this.groupModel.length) {
+        if (this.pivotModel.enabled && this.pivotModel.pivotCol && this.pivotModel.valueCols.length) {
+            var pivoted = pivotRows(sorted, this.mergedCols, this.pivotModel, this.expandedGroups);
+            // replace columns with dynamic pivot cols only (no original data cols for now)
+            this.viewRows = pivoted.rows;
+            this.mergedCols = pivoted.dynamicCols;
+            this.expandedGroups.clear();
+        } else if (this.groupModel.length) {
             var aggModel = this.buildAggModel();
             var grouped = groupAndFlattenRows(sorted, this.mergedCols, this.groupModel, aggModel, this.expandedGroups);
             // Ensure new groups are expanded by default
@@ -354,6 +371,29 @@ export class OgGridComponent<T = any> implements OnChanges {
 
     trackByCol(_i: number, col: ColumnDef<T>): string {
         return String(col.field);
+    }
+
+    isValueCol(col: ColumnDef<T>): boolean {
+        return this.pivotModel.valueCols.some((v) => v.colId === String(col.field));
+    }
+
+    toggleValueCol(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        var next = this.pivotModel.valueCols.slice();
+        var idx = next.findIndex((v) => v.colId === id);
+        if (idx === -1) next.push({ colId: id, aggFunc: col.aggFunc || 'sum' });
+        else next.splice(idx, 1);
+        this.pivotModel = Object.assign({}, this.pivotModel, { valueCols: next });
+        this.recompute();
+    }
+
+    onPivotToggle(enabled: boolean): void {
+        this.pivotModel = Object.assign({}, this.pivotModel, { enabled });
+        this.recompute();
+    }
+
+    onPivotConfigChange(_val?: any): void {
+        this.recompute();
     }
 
     getColWidth(col: ColumnDef<T>): number {

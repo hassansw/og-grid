@@ -36,6 +36,13 @@ export interface GroupModelItem {
     colId: string;
 }
 
+export interface PivotModel {
+    rowGroupCols: GroupModelItem[];
+    pivotCol?: string;
+    valueCols: AggModelItem[];
+    enabled: boolean;
+}
+
 export interface GridOptions<T = any> {
     rowSelection?: RowSelectionMode;
     defaultColDef?: Partial<ColumnDef<T>>;
@@ -88,10 +95,12 @@ export interface GridApi<T = any> {
     setFilterModel(model: FilterModelItem[]): void;
     setGroupModel(model: GroupModelItem[]): void;
     setExpandedGroups(paths: string[]): void;
+    setPivotModel(model: PivotModel): void;
     getSortModel(): SortModelItem[];
     getFilterModel(): FilterModelItem[];
     getGroupModel(): GroupModelItem[];
     getExpandedGroups(): string[];
+    getPivotModel(): PivotModel;
     getSelectedRows(): T[];
     exportCsv(filename?: string): void;
 }

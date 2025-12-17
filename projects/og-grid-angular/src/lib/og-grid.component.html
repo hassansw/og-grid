@@ -8,6 +8,11 @@
             </label>
             <button type="button" class="og-grid-btn" (click)="clearGroups()">Clear</button>
         </div>
+        <div class="og-grid-actions">
+            <button type="button" class="og-grid-btn og-grid-pivot-btn" (click)="showPivotPanel = !showPivotPanel">
+                {{ showPivotPanel ? 'Hide Pivot' : 'Show Pivot' }}
+            </button>
+        </div>
     </div>
 
     <div class="og-grid-header">
@@ -34,6 +39,37 @@
                 <button type="button" (click)="clearFilters()">Clear All Filters</button>
             </div>
             <span class="og-grid-resizer" (mousedown)="onResizeStart($event, col)"></span>
+        </div>
+    </div>
+
+    <div class="og-grid-pivot-panel" *ngIf="showPivotPanel">
+        <div class="og-grid-pivot-toggle">
+            <label><input type="checkbox" [(ngModel)]="pivotModel.enabled" (ngModelChange)="onPivotToggle($event)" /> Pivot Mode</label>
+        </div>
+        <div class="og-grid-pivot-section">
+            <div class="og-grid-pivot-title">Pivot Column</div>
+            <select [(ngModel)]="pivotModel.pivotCol" (ngModelChange)="onPivotConfigChange($event)">
+                <option [ngValue]="undefined">None</option>
+                <option *ngFor="let col of columnDefs" [ngValue]="col.field">{{ col.headerName || (col.field + '') }}</option>
+            </select>
+        </div>
+        <div class="og-grid-pivot-section">
+            <div class="og-grid-pivot-title">Row Groups</div>
+            <div class="og-grid-pivot-list">
+                <label *ngFor="let col of columnDefs">
+                    <input type="checkbox" [checked]="isGrouped(col)" (change)="toggleGroup(col)" />
+                    {{ col.headerName || (col.field + '') }}
+                </label>
+            </div>
+        </div>
+        <div class="og-grid-pivot-section">
+            <div class="og-grid-pivot-title">Values</div>
+            <div class="og-grid-pivot-list">
+                <label *ngFor="let col of columnDefs">
+                    <input type="checkbox" [checked]="isValueCol(col)" (change)="toggleValueCol(col)" />
+                    {{ col.headerName || (col.field + '') }}
+                </label>
+            </div>
         </div>
     </div>
 

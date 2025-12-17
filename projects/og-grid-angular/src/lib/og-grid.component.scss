@@ -2,6 +2,8 @@
     border: 1px solid #ddd;
     font-family: Arial, Helvetica, sans-serif;
     font-size: 13px;
+    position: relative;
+    padding-right: 280px;
 }
 
 .og-grid-root.resizing,
@@ -38,6 +40,8 @@
     border-bottom: 1px solid #eee;
     background: #fdfdfd;
     gap: 8px;
+    justify-content: space-between;
+    align-items: center;
 }
 
 .og-grid-group-label {
@@ -50,6 +54,12 @@
     display: flex;
     flex-wrap: wrap;
     gap: 6px;
+}
+
+.og-grid-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
 }
 
 .og-grid-pill {
@@ -79,6 +89,7 @@
     overflow: visible;
     text-overflow: ellipsis;
     box-sizing: border-box;
+    display: flex;
     justify-content: space-between;
 }
 
@@ -228,6 +239,15 @@
     background: #f1f1f1;
 }
 
+.og-grid-pivot-btn {
+    border-color: #0f62fe;
+    color: #0f62fe;
+}
+
+.og-grid-pivot-btn:hover {
+    background: #e8f0ff;
+}
+
 .og-grid-toggle {
     border: 1px solid #ccc;
     background: #fff;
@@ -278,4 +298,54 @@
     flex: 0 0 36px;
     display: flex;
     justify-content: center;
+}
+
+/* Pivot panel styling */
+.og-grid-pivot-panel {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    width: 260px;
+    max-height: 90vh;
+    background: #fff;
+    border: 1px solid #e2e2e2;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+    border-radius: 8px;
+    padding: 10px 12px;
+    overflow: auto;
+    z-index: 60;
+}
+
+.og-grid-pivot-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-weight: 600;
+}
+
+.og-grid-pivot-section {
+    margin-bottom: 12px;
+}
+
+.og-grid-pivot-title {
+    font-weight: 600;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.og-grid-pivot-list {
+    display: grid;
+    grid-template-columns: 1fr;
+    gap: 6px;
+}
+
+.og-grid-pivot-list label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border: 1px solid #eee;
+    border-radius: 4px;
+    background: #fafafa;
 }

@@ -8,6 +8,7 @@ import {
     SortModelItem,
     GroupViewRow,
     TextFilterMode,
+    PivotModel,
 } from './types';
 
 export function mergeColDef<T>(col: ColumnDef<T>, defaultColDef?: Partial<ColumnDef<T>>): ColumnDef<T> {
@@ -309,6 +310,80 @@ function computeAggs<T>(
     });
 
     return agg;
+}
+
+// -------- Pivot (single pivot column MVP) --------
+
+export interface PivotResult<T = any> {
+    rows: T[];
+    dynamicCols: ColumnDef<T>[];
+    paths: string[];
+}
+
+export function pivotRows<T>(
+    rows: T[],
+    cols: ColumnDef<T>[],
+    pivot: PivotModel,
+    expanded: Set<string> | null | undefined
+): PivotResult<T> {
+    if (!pivot.enabled || !pivot.pivotCol || !pivot.valueCols.length) {
+        return { rows, dynamicCols: [], paths: [] };
+    }
+
+    var colMap: Record<string, ColumnDef<T> | undefined> = {};
+    cols.forEach(function (c) {
+        colMap[String(c.field)] = c;
+    });
+
+    var pivotCol = colMap[pivot.pivotCol];
+    if (!pivotCol) return { rows, dynamicCols: [], paths: [] };
+
+    // Group rows by pivot value
+    var pivotBuckets: Record<string, T[]> = {};
+    var pivotValues: any[] = [];
+    rows.forEach(function (r) {
+        var key = getCellValue(pivotCol!, r);
+        var k = key == null ? '__null__' : String(key);
+        if (!pivotBuckets[k]) {
+            pivotBuckets[k] = [];
+            pivotValues.push(k);
+        }
+        pivotBuckets[k].push(r);
+    });
+
+    // Build dynamic columns for pivot values x value cols
+    var dynamicCols: ColumnDef<T>[] = [];
+    pivotValues.forEach(function (pv) {
+        pivot.valueCols.forEach(function (vcol) {
+            var base = colMap[vcol.colId];
+            dynamicCols.push({
+                field: 'pv:' + pv + ':' + vcol.colId,
+                headerName: (base?.headerName || vcol.colId) + ' ' + (pv === '__null__' ? '(blank)' : pv),
+                sortable: false,
+                filter: 'number',
+                width: 140,
+            } as any);
+        });
+    });
+
+    // Compute aggregated rows per pivot value
+    var out: any[] = [];
+    Object.keys(pivotBuckets).forEach(function (pv) {
+        var bucket = pivotBuckets[pv];
+        var row: any = { __pivotKey: pv };
+        pivot.valueCols.forEach(function (vcol) {
+            var aggItem = vcol;
+            var aggFn = resolveAggFunc(aggItem.aggFunc, colMap[vcol.colId]);
+            var values = bucket.map(function (r) {
+                var c = colMap[vcol.colId];
+                return c ? getCellValue(c, r) : undefined;
+            });
+            row['pv:' + pv + ':' + vcol.colId] = aggFn(values);
+        });
+        out.push(row as T);
+    });
+
+    return { rows: out, dynamicCols, paths: [] };
 }
 
 function resolveAggFunc<T>(
