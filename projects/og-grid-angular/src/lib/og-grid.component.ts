@@ -47,6 +47,8 @@ export class OgGridComponent<T = any> implements OnChanges {
     groupModel: GroupModelItem[] = [];
     expandedGroups = new Set<string>();
     private filterInputs: Record<string, { value?: any; valueTo?: any }> = {};
+    private filterModes: Record<string, 'contains' | 'startsWith' | 'equals'> = {};
+    private filterDebounce: Record<string, any> = {};
 
     private selected = new Set<T>(); // track by row object references
 
@@ -217,6 +219,7 @@ export class OgGridComponent<T = any> implements OnChanges {
 
     onFilterChange(col: ColumnDef<T>, value: any, valueTo?: any): void {
         var colId = String(col.field);
+        var mode = this.filterModes[colId] || (col as any).filterMatchMode || 'contains';
         var next = this.filterModel.filter(function (f) {
             return f.colId !== colId;
         });
@@ -225,7 +228,7 @@ export class OgGridComponent<T = any> implements OnChanges {
         var hasValue = value !== undefined && value !== null && value !== '';
         if (hasValue || hasRange) {
             var type = typeof col.filter === 'string' ? col.filter : undefined;
-            next.push({ colId, type, value, valueTo });
+            next.push({ colId, type, value, valueTo, matchMode: mode as any } as any);
         }
 
         this.filterModel = next;
@@ -239,6 +242,24 @@ export class OgGridComponent<T = any> implements OnChanges {
         else current.valueTo = value;
         this.filterInputs[colId] = current;
         this.onFilterChange(col, current.value, current.valueTo);
+    }
+
+    onTextFilterInput(col: ColumnDef<T>, raw: any): void {
+        var colId = String(col.field);
+        // debounce per column
+        clearTimeout(this.filterDebounce[colId]);
+        this.filterDebounce[colId] = setTimeout(() => {
+            this.onFilterChange(col, raw, undefined);
+        }, 200);
+    }
+
+    onTextModeChange(col: ColumnDef<T>, mode: 'contains' | 'startsWith' | 'equals'): void {
+        var colId = String(col.field);
+        this.filterModes[colId] = mode;
+        // Reapply current filter value with new mode
+        var existing = this.filterModel.find((f) => f.colId === colId);
+        var val = existing ? existing.value : '';
+        this.onFilterChange(col, val, existing ? existing.valueTo : undefined);
     }
 
     clearFilters(): void {

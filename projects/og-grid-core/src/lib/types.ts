@@ -5,6 +5,8 @@ export interface SortModelItem {
     sort: SortDirection;
 }
 
+export type TextFilterMode = 'contains' | 'startsWith' | 'equals';
+
 export type AggregationType = 'sum' | 'min' | 'max' | 'avg' | 'count';
 
 export interface AggModelItem {
@@ -22,6 +24,10 @@ export interface FilterModelItem {
      * Optional upper bound for range filters (number/date).
      */
     valueTo?: any;
+    /**
+     * For text filters: contains | startsWith | equals
+     */
+    matchMode?: TextFilterMode;
 }
 
 export type RowSelectionMode = 'single' | 'multiple';
@@ -51,6 +57,10 @@ export interface ColumnDef<T = any> {
      * Optional filter comparator: receives cell value + filter values.
      */
     filterComparator?: (cellValue: any, filterValue: any, filterValueTo?: any) => boolean;
+    /**
+     * Default text match mode for this column.
+     */
+    filterMatchMode?: TextFilterMode;
     /**
      * Aggregation function to use when this column participates in grouping aggregations.
      * If omitted, numeric columns default to 'sum', others to 'count'.

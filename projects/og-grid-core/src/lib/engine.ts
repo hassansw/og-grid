@@ -7,6 +7,7 @@ import {
     RowView,
     SortModelItem,
     GroupViewRow,
+    TextFilterMode,
 } from './types';
 
 export function mergeColDef<T>(col: ColumnDef<T>, defaultColDef?: Partial<ColumnDef<T>>): ColumnDef<T> {
@@ -100,9 +101,9 @@ export function filterRows<T>(
                 continue;
             }
 
-            var type = f.type || (typeof cell === 'number' ? 'number' : 'text');
-            var comparator = col.filterComparator || defaultFilterComparator;
-            var pass = comparator(cell, f.value, f.valueTo, type);
+    var type = f.type || (typeof cell === 'number' ? 'number' : 'text');
+    var comparator = col.filterComparator || defaultFilterComparator;
+    var pass = comparator(cell, f.value, f.valueTo, type, f.matchMode || col.filterMatchMode);
             if (!pass) return false;
         }
         return true;
@@ -113,7 +114,8 @@ function defaultFilterComparator(
     cellValue: any,
     filterValue: any,
     filterValueTo: any,
-    type: FilterModelItem['type']
+    type: FilterModelItem['type'],
+    matchMode?: TextFilterMode
 ): boolean {
     if (type === 'number') {
         if (filterValue == null && filterValueTo == null) return true;
@@ -137,10 +139,12 @@ function defaultFilterComparator(
         return true;
     }
 
-    // text (default): case-insensitive contains
+    // text (default): case-insensitive contains/starts/equals
     if (filterValue == null || filterValue === '') return true;
     var s = safeString(cellValue);
     var fv = safeString(filterValue);
+    if (matchMode === 'startsWith') return s.startsWith(fv);
+    if (matchMode === 'equals') return s === fv;
     return s.indexOf(fv) >= 0;
 }
 

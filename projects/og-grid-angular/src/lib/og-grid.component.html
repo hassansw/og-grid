@@ -33,7 +33,16 @@
         <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol">
             <ng-container [ngSwitch]="col.filter || 'text'">
                 <input *ngSwitchCase="'text'" type="text" placeholder="Filter..."
-                    [value]="getFilterValue(col)" (input)="onFilterChange(col, $any($event.target).value)" />
+                    [value]="getFilterValue(col)" (input)="onTextFilterInput(col, $any($event.target).value)" />
+                <select class="og-grid-filter-mode" *ngSwitchCase="'text'"
+                    [value]="getFilterValue(col, 'min')" hidden></select>
+                <div class="og-grid-filter-mode-row" *ngSwitchCase="'text'">
+                    <select (change)="onTextModeChange(col, $any($event.target).value)">
+                        <option value="contains">Contains</option>
+                        <option value="startsWith">Starts with</option>
+                        <option value="equals">Equals</option>
+                    </select>
+                </div>
 
                 <div *ngSwitchCase="'number'" class="og-grid-filter-range">
                     <input type="number" placeholder="Min" [value]="getFilterValue(col, 'min')"
