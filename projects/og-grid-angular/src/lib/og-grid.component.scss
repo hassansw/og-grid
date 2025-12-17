@@ -4,6 +4,12 @@
     font-size: 13px;
 }
 
+.og-grid-root.resizing,
+.og-grid-root.resizing * {
+    cursor: col-resize !important;
+    user-select: none !important;
+}
+
 .og-grid-header,
 .og-grid-filter,
 .og-grid-groupbar,
@@ -24,6 +30,7 @@
 .og-grid-filter {
     border-bottom: 1px solid #eee;
     background: #fbfbfb;
+    align-items: flex-start;
 }
 
 .og-grid-groupbar {
@@ -71,6 +78,7 @@
     white-space: nowrap;
     overflow: visible;
     text-overflow: ellipsis;
+    box-sizing: border-box;
 }
 
 .og-grid-header-cell:last-child,
@@ -160,7 +168,26 @@
     box-sizing: border-box;
 }
 
-.og-grid-filter-cell input {
+.og-grid-filter-cell {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.og-grid-filter .og-grid-select {
+    flex: 0 0 36px;
+    width: 36px;
+    padding: 6px;
+    align-items: center;
+}
+
+.og-grid-filter .og-grid-select .og-grid-btn {
+    width: auto;
+    padding: 4px 6px;
+}
+
+.og-grid-filter-cell input,
+.og-grid-filter-cell select {
     width: 100%;
     box-sizing: border-box;
     padding: 4px 6px;
@@ -192,6 +219,8 @@
     border: 1px solid #ccc;
     background: #fff;
     cursor: pointer;
+    width: 100%;
+    box-sizing: border-box;
 }
 
 .og-grid-btn:hover {

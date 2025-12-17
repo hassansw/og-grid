@@ -55,6 +55,8 @@ export class OgGridComponent<T = any> implements OnChanges {
     private filterDebounce: Record<string, any> = {};
     private colWidths: Record<string, number> = {};
     menuOpenFor: string | null = null;
+    private resizeFrame: number | null = null;
+    private resizingCol: string | null = null;
 
     private selected = new Set<T>(); // track by row object references
 
@@ -412,18 +414,36 @@ export class OgGridComponent<T = any> implements OnChanges {
         var minW = col.minWidth || 60;
         var maxW = col.maxWidth || 600;
         this.zone.runOutsideAngular(() => {
+            var pending = false;
+            var nextWidth = startW;
             var move = (e: MouseEvent) => {
                 var delta = e.clientX - startX;
-                var next = Math.max(minW, Math.min(maxW, startW + delta));
-                this.colWidths = Object.assign({}, this.colWidths, { [id]: next });
-                this.cdr.markForCheck();
+                nextWidth = Math.max(minW, Math.min(maxW, startW + delta));
+                if (!pending) {
+                    pending = true;
+                    this.resizeFrame = requestAnimationFrame(() => {
+                        pending = false;
+                        this.colWidths = Object.assign({}, this.colWidths, { [id]: nextWidth });
+                        this.cdr.markForCheck();
+                    });
+                }
             };
             var up = () => {
+                if (this.resizeFrame != null) {
+                    cancelAnimationFrame(this.resizeFrame);
+                    this.resizeFrame = null;
+                }
+                this.resizingCol = null;
+                document.body.style.cursor = '';
                 window.removeEventListener('mousemove', move);
                 window.removeEventListener('mouseup', up);
+                this.zone.run(() => this.cdr.markForCheck());
             };
+            this.resizingCol = id;
+            document.body.style.cursor = 'col-resize';
             window.addEventListener('mousemove', move);
-            window.addEventListener('mouseup', up);
+            window.addEventListener('mouseup', up, { once: true });
+            this.zone.run(() => this.cdr.markForCheck());
         });
     }
 

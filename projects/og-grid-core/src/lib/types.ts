@@ -46,7 +46,8 @@ export interface GridOptions<T = any> {
 }
 
 export interface ColumnDef<T = any> {
-    field: keyof T | string;
+    // field: keyof T | string;
+    field: any;
     headerName?: string;
     width?: number;
     minWidth?: number;
