@@ -4,6 +4,10 @@ import {
     Input,
     OnChanges,
     SimpleChanges,
+    ChangeDetectorRef,
+    NgZone,
+    HostListener,
+    ElementRef,
 } from '@angular/core';
 
 import {
@@ -49,10 +53,12 @@ export class OgGridComponent<T = any> implements OnChanges {
     private filterInputs: Record<string, { value?: any; valueTo?: any }> = {};
     private filterModes: Record<string, 'contains' | 'startsWith' | 'equals'> = {};
     private filterDebounce: Record<string, any> = {};
+    private colWidths: Record<string, number> = {};
+    menuOpenFor: string | null = null;
 
     private selected = new Set<T>(); // track by row object references
 
-    constructor() {
+    constructor(private cdr: ChangeDetectorRef, private zone: NgZone, private host: ElementRef<HTMLElement>) {
         var self = this;
 
         this.api = {
@@ -101,6 +107,17 @@ export class OgGridComponent<T = any> implements OnChanges {
                 downloadTextFile(csv, name, 'text/csv;charset=utf-8;');
             },
         };
+    }
+
+    @HostListener('document:click', ['$event'])
+    onDocClick(ev: MouseEvent): void {
+        if (!this.menuOpenFor) return;
+        if (this.host && this.host.nativeElement.contains(ev.target as Node)) {
+            // clicks inside component: ignore unless on menu toggle handled elsewhere
+            return;
+        }
+        this.menuOpenFor = null;
+        this.cdr.markForCheck();
     }
 
     ngOnChanges(changes: SimpleChanges): void {
@@ -333,6 +350,77 @@ export class OgGridComponent<T = any> implements OnChanges {
 
     trackByCol(_i: number, col: ColumnDef<T>): string {
         return String(col.field);
+    }
+
+    getColWidth(col: ColumnDef<T>): number {
+        var id = String(col.field);
+        return this.colWidths[id] ?? (col.width || 160);
+    }
+
+    toggleMenu(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        this.menuOpenFor = this.menuOpenFor === id ? null : id;
+    }
+
+    closeMenu(): void {
+        this.menuOpenFor = null;
+    }
+
+    sortAsc(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        var next = this.sortModel.filter((m) => m.colId !== id);
+        next.unshift({ colId: id, sort: 'asc' });
+        this.sortModel = next;
+        this.recompute();
+        this.closeMenu();
+    }
+
+    sortDesc(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        var next = this.sortModel.filter((m) => m.colId !== id);
+        next.unshift({ colId: id, sort: 'desc' });
+        this.sortModel = next;
+        this.recompute();
+        this.closeMenu();
+    }
+
+    clearSort(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        this.sortModel = this.sortModel.filter((m) => m.colId !== id);
+        this.recompute();
+        this.closeMenu();
+    }
+
+    clearFilterFor(col: ColumnDef<T>): void {
+        var id = String(col.field);
+        this.filterModel = this.filterModel.filter((f) => f.colId !== id);
+        delete this.filterInputs[id];
+        this.recompute();
+        this.closeMenu();
+    }
+
+    onResizeStart(ev: MouseEvent, col: ColumnDef<T>): void {
+        ev.stopPropagation();
+        ev.preventDefault();
+        var startX = ev.clientX;
+        var id = String(col.field);
+        var startW = this.getColWidth(col);
+        var minW = col.minWidth || 60;
+        var maxW = col.maxWidth || 600;
+        this.zone.runOutsideAngular(() => {
+            var move = (e: MouseEvent) => {
+                var delta = e.clientX - startX;
+                var next = Math.max(minW, Math.min(maxW, startW + delta));
+                this.colWidths = Object.assign({}, this.colWidths, { [id]: next });
+                this.cdr.markForCheck();
+            };
+            var up = () => {
+                window.removeEventListener('mousemove', move);
+                window.removeEventListener('mouseup', up);
+            };
+            window.addEventListener('mousemove', move);
+            window.addEventListener('mouseup', up);
+        });
     }
 
     getFilterValue(col: ColumnDef<T>, part: 'min' | 'max' = 'min'): any {

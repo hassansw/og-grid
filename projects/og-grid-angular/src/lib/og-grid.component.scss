@@ -13,6 +13,7 @@
 }
 
 .og-grid-header {
+    position: relative;
     user-select: none;
     border-bottom: 1px solid #ddd;
     background: #f7f7f7;
@@ -62,11 +63,12 @@
 .og-grid-header-cell,
 .og-grid-filter-cell,
 .og-grid-cell {
-    flex: 1 0 0;
+    position: relative;
+    flex: 0 0 auto;
     padding: 6px 8px;
     border-right: 1px solid #eee;
     white-space: nowrap;
-    overflow: hidden;
+    overflow: visible;
     text-overflow: ellipsis;
 }
 
@@ -83,6 +85,67 @@
 .og-grid-sort-ind {
     margin-left: 6px;
     font-size: 11px;
+}
+
+.og-grid-header-title {
+    display: inline-block;
+    max-width: calc(100% - 32px);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    vertical-align: middle;
+}
+
+.og-grid-header-menu {
+    margin-left: 6px;
+    cursor: pointer;
+    position: relative;
+    user-select: none;
+}
+
+.og-grid-menu {
+    position: absolute;
+    top: 18px;
+    right: 0;
+    background: #fff;
+    border: 1px solid #ddd;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+    min-width: 160px;
+    z-index: 10;
+    padding: 4px 0;
+}
+
+.og-grid-menu button {
+    width: 100%;
+    padding: 6px 10px;
+    text-align: left;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.og-grid-menu button:hover {
+    background: #f5f5f5;
+}
+
+.og-grid-menu hr {
+    margin: 4px 0;
+    border: none;
+    border-top: 1px solid #eee;
+}
+
+.og-grid-resizer {
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 8px;
+    cursor: col-resize;
+    user-select: none;
+    height: 100%;
+    background: transparent;
+}
+
+.og-grid-resizer:hover {
+    background: rgba(0, 0, 0, 0.06);
 }
 
 .og-grid-filter-cell input {

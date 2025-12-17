@@ -16,12 +16,24 @@
         </div>
 
         <div class="og-grid-header-cell" *ngFor="let col of mergedCols; let ci = index; trackBy: trackByCol"
-            [style.width.px]="col.width || null" (click)="onHeaderClick(col, $event)" [class.og-grid-sortable]="!!col.sortable"
+            [style.width.px]="getColWidth(col)" (click)="onHeaderClick(col, $event)" [class.og-grid-sortable]="!!col.sortable"
             title="Click to sort">
             <span class="og-grid-header-title">
                 {{ col.headerName || (col.field + '') }}
             </span>
             <span class="og-grid-sort-ind">{{ getSortIndicator(col) }}</span>
+            <span class="og-grid-header-menu" (click)="toggleMenu(col); $event.stopPropagation()">
+                ⋮
+                <div class="og-grid-menu" *ngIf="menuOpenFor === (col.field + '')">
+                    <button type="button" (click)="sortAsc(col)">Sort Ascending</button>
+                    <button type="button" (click)="sortDesc(col)">Sort Descending</button>
+                    <button type="button" (click)="clearSort(col)">Clear Sort</button>
+                    <hr />
+                    <button type="button" (click)="clearFilterFor(col)">Clear Filter</button>
+                    <button type="button" (click)="clearFilters()">Clear All Filters</button>
+                </div>
+            </span>
+            <span class="og-grid-resizer" (mousedown)="onResizeStart($event, col)"></span>
         </div>
     </div>
 
@@ -30,7 +42,7 @@
             <button type="button" class="og-grid-btn" (click)="clearFilters()">Clear</button>
         </div>
 
-        <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol">
+        <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol" [style.width.px]="getColWidth(col)">
             <ng-container [ngSwitch]="col.filter || 'text'">
                 <input *ngSwitchCase="'text'" type="text" placeholder="Filter..."
                     [value]="getFilterValue(col)" (input)="onTextFilterInput(col, $any($event.target).value)" />
@@ -79,7 +91,7 @@
                 </ng-template>
             </div>
 
-            <div class="og-grid-cell" *ngFor="let col of mergedCols; let ci = index">
+            <div class="og-grid-cell" *ngFor="let col of mergedCols; let ci = index" [style.width.px]="getColWidth(col)">
                 <ng-container *ngIf="!isGroupRow(row); else groupCell">
                     {{ renderCell(col, $any(row)) }}
                 </ng-container>
