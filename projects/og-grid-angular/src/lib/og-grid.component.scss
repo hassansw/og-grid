@@ -5,6 +5,8 @@
 }
 
 .og-grid-header,
+.og-grid-filter,
+.og-grid-groupbar,
 .og-grid-row {
     display: flex;
     align-items: center;
@@ -17,7 +19,48 @@
     font-weight: 600;
 }
 
+.og-grid-filter {
+    border-bottom: 1px solid #eee;
+    background: #fbfbfb;
+}
+
+.og-grid-groupbar {
+    padding: 6px 8px;
+    border-bottom: 1px solid #eee;
+    background: #fdfdfd;
+    gap: 8px;
+}
+
+.og-grid-group-label {
+    font-weight: 600;
+    margin-right: 6px;
+    white-space: nowrap;
+}
+
+.og-grid-group-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+}
+
+.og-grid-pill {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 6px;
+    border: 1px solid #ddd;
+    border-radius: 6px;
+    background: #fff;
+    font-size: 12px;
+    cursor: pointer;
+}
+
+.og-grid-pill input {
+    margin: 0;
+}
+
 .og-grid-header-cell,
+.og-grid-filter-cell,
 .og-grid-cell {
     padding: 6px 8px;
     border-right: 1px solid #eee;
@@ -27,6 +70,7 @@
 }
 
 .og-grid-header-cell:last-child,
+.og-grid-filter-cell:last-child,
 .og-grid-cell:last-child {
     border-right: none;
 }
@@ -40,6 +84,46 @@
     font-size: 11px;
 }
 
+.og-grid-filter-cell input {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 4px 6px;
+    font-size: 12px;
+}
+
+.og-grid-filter-range {
+    display: flex;
+    gap: 4px;
+}
+
+.og-grid-filter-range input {
+    width: 100%;
+}
+
+.og-grid-btn {
+    padding: 4px 8px;
+    font-size: 12px;
+    border: 1px solid #ccc;
+    background: #fff;
+    cursor: pointer;
+}
+
+.og-grid-btn:hover {
+    background: #f1f1f1;
+}
+
+.og-grid-toggle {
+    border: 1px solid #ccc;
+    background: #fff;
+    padding: 2px 4px;
+    cursor: pointer;
+    font-size: 12px;
+}
+
+.og-grid-toggle:hover {
+    background: #f5f5f5;
+}
+
 .og-grid-body {
     max-height: 420px;
     overflow: auto;
@@ -49,12 +133,28 @@
     border-bottom: 1px solid #f1f1f1;
 }
 
+.og-grid-group-row {
+    background: #f6f8fb;
+    font-weight: 600;
+}
+
 .og-grid-row:hover {
     background: #fafafa;
 }
 
 .og-grid-row-selected {
     background: #e9f2ff;
+}
+
+.og-grid-indent {
+    display: inline-block;
+    width: 0;
+}
+
+.og-grid-count {
+    margin-left: 6px;
+    color: #666;
+    font-weight: 400;
 }
 
 .og-grid-select {

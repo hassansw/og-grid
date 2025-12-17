@@ -1,11 +1,22 @@
 <div class="og-grid-root">
+    <div class="og-grid-groupbar" *ngIf="mergedCols.length">
+        <div class="og-grid-group-label">Group by:</div>
+        <div class="og-grid-group-pills">
+            <label class="og-grid-pill" *ngFor="let col of mergedCols">
+                <input type="checkbox" [checked]="isGrouped(col)" (change)="toggleGroup(col)" />
+                <span>{{ col.headerName || (col.field + '') }}</span>
+            </label>
+            <button type="button" class="og-grid-btn" (click)="clearGroups()">Clear</button>
+        </div>
+    </div>
+
     <div class="og-grid-header">
         <div class="og-grid-header-cell og-grid-select">
             <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" />
         </div>
 
         <div class="og-grid-header-cell" *ngFor="let col of mergedCols; let ci = index"
-            [style.width.px]="col.width || null" (click)="onHeaderClick(col)" [class.og-grid-sortable]="!!col.sortable"
+            [style.width.px]="col.width || null" (click)="onHeaderClick(col, $event)" [class.og-grid-sortable]="!!col.sortable"
             title="Click to sort">
             <span class="og-grid-header-title">
                 {{ col.headerName || (col.field + '') }}
@@ -14,15 +25,61 @@
         </div>
     </div>
 
+    <div class="og-grid-filter" *ngIf="mergedCols.length">
+        <div class="og-grid-filter-cell og-grid-select">
+            <button type="button" class="og-grid-btn" (click)="clearFilters()">Clear</button>
+        </div>
+
+        <div class="og-grid-filter-cell" *ngFor="let col of mergedCols">
+            <ng-container [ngSwitch]="col.filter || 'text'">
+                <input *ngSwitchCase="'text'" type="text" placeholder="Filter..."
+                    (input)="onFilterChange(col, $any($event.target).value)" />
+
+                <div *ngSwitchCase="'number'" class="og-grid-filter-range">
+                    <input type="number" placeholder="Min" (input)="onRangeInput(col, 'min', $any($event.target).value)" />
+                    <input type="number" data-max placeholder="Max" (input)="onRangeInput(col, 'max', $any($event.target).value)" />
+                </div>
+
+                <div *ngSwitchCase="'date'" class="og-grid-filter-range">
+                    <input type="date" placeholder="From" (input)="onRangeInput(col, 'min', $any($event.target).value)" />
+                    <input type="date" data-max placeholder="To" (input)="onRangeInput(col, 'max', $any($event.target).value)" />
+                </div>
+
+                <input *ngSwitchDefault type="text" placeholder="Filter..."
+                    (input)="onFilterChange(col, $any($event.target).value)" />
+            </ng-container>
+        </div>
+    </div>
+
     <div class="og-grid-body">
-        <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByIndex"
-            [class.og-grid-row-selected]="isRowSelected(ri)">
+        <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByRow"
+            [class.og-grid-row-selected]="isRowSelected(row)"
+            [class.og-grid-group-row]="isGroupRow(row)">
             <div class="og-grid-cell og-grid-select">
-                <input type="checkbox" [checked]="isRowSelected(ri)" (change)="toggleRowSelection(ri)" />
+                <ng-container *ngIf="!isGroupRow(row); else groupToggle">
+                    <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)" />
+                </ng-container>
+                <ng-template #groupToggle>
+                    <button type="button" class="og-grid-toggle" (click)="toggleGroupExpand($any(row))">
+                        {{ isExpanded($any(row)) ? '▾' : '▸' }}
+                    </button>
+                </ng-template>
             </div>
 
-            <div class="og-grid-cell" *ngFor="let col of mergedCols">
-                {{ renderCell(col, row) }}
+            <div class="og-grid-cell" *ngFor="let col of mergedCols; let ci = index">
+                <ng-container *ngIf="!isGroupRow(row); else groupCell">
+                    {{ renderCell(col, $any(row)) }}
+                </ng-container>
+                <ng-template #groupCell>
+                    <ng-container *ngIf="ci === 0; else aggCell">
+                        <span class="og-grid-indent" [style.paddingLeft.px]="($any(row).level * 14)"></span>
+                        <strong>{{ $any(row).key ?? '(blank)' }}</strong>
+                        <span class="og-grid-count">({{ $any(row).count }})</span>
+                    </ng-container>
+                    <ng-template #aggCell>
+                        {{ getGroupAgg($any(row), col) }}
+                    </ng-template>
+                </ng-template>
             </div>
         </div>
     </div>

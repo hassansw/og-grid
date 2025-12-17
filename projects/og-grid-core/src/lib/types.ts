@@ -5,11 +5,38 @@ export interface SortModelItem {
     sort: SortDirection;
 }
 
+export type AggregationType = 'sum' | 'min' | 'max' | 'avg' | 'count';
+
+export interface AggModelItem {
+    colId: string;
+    aggFunc: AggregationType | ((values: any[]) => any);
+}
+
+export type FilterType = 'text' | 'number' | 'date';
+
+export interface FilterModelItem {
+    colId: string;
+    type?: FilterType;
+    value?: any;
+    /**
+     * Optional upper bound for range filters (number/date).
+     */
+    valueTo?: any;
+}
+
 export type RowSelectionMode = 'single' | 'multiple';
+
+export interface GroupModelItem {
+    colId: string;
+}
 
 export interface GridOptions<T = any> {
     rowSelection?: RowSelectionMode;
     defaultColDef?: Partial<ColumnDef<T>>;
+    /**
+     * Enable multi-column sorting (otherwise single-column).
+     */
+    multiSort?: boolean;
 }
 
 export interface ColumnDef<T = any> {
@@ -19,6 +46,16 @@ export interface ColumnDef<T = any> {
     minWidth?: number;
     maxWidth?: number;
     sortable?: boolean;
+    filter?: FilterType | ((value: any, row: T) => boolean);
+    /**
+     * Optional filter comparator: receives cell value + filter values.
+     */
+    filterComparator?: (cellValue: any, filterValue: any, filterValueTo?: any) => boolean;
+    /**
+     * Aggregation function to use when this column participates in grouping aggregations.
+     * If omitted, numeric columns default to 'sum', others to 'count'.
+     */
+    aggFunc?: AggregationType | ((values: any[]) => any);
     /**
      * Returns the raw value for this column. If omitted, the field property is used.
      */
@@ -37,8 +74,26 @@ export interface GridApi<T = any> {
     setRowData(data: T[]): void;
     setColumnDefs(cols: ColumnDef<T>[]): void;
     setSortModel(model: SortModelItem[]): void;
+    setFilterModel(model: FilterModelItem[]): void;
+    setGroupModel(model: GroupModelItem[]): void;
+    setExpandedGroups(paths: string[]): void;
     getSortModel(): SortModelItem[];
+    getFilterModel(): FilterModelItem[];
+    getGroupModel(): GroupModelItem[];
+    getExpandedGroups(): string[];
     getSelectedRows(): T[];
     exportCsv(filename?: string): void;
 }
+
+export interface GroupViewRow<T = any> {
+    __group: true;
+    key: any;
+    colId: string;
+    level: number;
+    path: string;
+    count: number;
+    agg: Record<string, any>;
+}
+
+export type RowView<T = any> = T | GroupViewRow<T>;
 
