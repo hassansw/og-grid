@@ -309,6 +309,23 @@ export class OgGridComponent<T = any> implements OnChanges {
         // Use index to avoid duplicate keys from object stringification
         return 'r:' + _i;
     };
+
+    trackByCol(_i: number, col: ColumnDef<T>): string {
+        return String(col.field);
+    }
+
+    getFilterValue(col: ColumnDef<T>, part: 'min' | 'max' = 'min'): any {
+        var colId = String(col.field);
+        // Range values cached separately
+        if (part === 'min' || part === 'max') {
+            var cached = this.filterInputs[colId];
+            if (cached) return part === 'min' ? cached.value : cached.valueTo;
+        }
+        // For text / single-value filters, derive from model
+        var hit = this.filterModel.find((f) => f.colId === colId);
+        if (!hit) return '';
+        return part === 'min' ? hit.value ?? '' : hit.valueTo ?? '';
+    }
 }
 
 function downloadTextFile(content: string, filename: string, mime: string): void {
