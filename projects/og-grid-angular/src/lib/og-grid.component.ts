@@ -163,6 +163,8 @@ export class OgGridComponent<T = any> implements OnChanges {
 
     onHeaderClick(col: ColumnDef<T>, ev?: MouseEvent): void {
         if (!col.sortable) return;
+        // If menu is open for this column, don't toggle sort
+        if (this.menuOpenFor === String(col.field)) return;
 
         var colId = String(col.field);
         var multi = !!(this.options && this.options.multiSort) || !!(ev && ev.shiftKey);
@@ -360,10 +362,12 @@ export class OgGridComponent<T = any> implements OnChanges {
     toggleMenu(col: ColumnDef<T>): void {
         var id = String(col.field);
         this.menuOpenFor = this.menuOpenFor === id ? null : id;
+        this.cdr.markForCheck();
     }
 
     closeMenu(): void {
         this.menuOpenFor = null;
+        this.cdr.markForCheck();
     }
 
     sortAsc(col: ColumnDef<T>): void {

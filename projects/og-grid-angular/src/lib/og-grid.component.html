@@ -24,15 +24,15 @@
             <span class="og-grid-sort-ind">{{ getSortIndicator(col) }}</span>
             <span class="og-grid-header-menu" (click)="toggleMenu(col); $event.stopPropagation()">
                 ⋮
-                <div class="og-grid-menu" *ngIf="menuOpenFor === (col.field + '')">
-                    <button type="button" (click)="sortAsc(col)">Sort Ascending</button>
-                    <button type="button" (click)="sortDesc(col)">Sort Descending</button>
-                    <button type="button" (click)="clearSort(col)">Clear Sort</button>
-                    <hr />
-                    <button type="button" (click)="clearFilterFor(col)">Clear Filter</button>
-                    <button type="button" (click)="clearFilters()">Clear All Filters</button>
-                </div>
             </span>
+            <div class="og-grid-menu" *ngIf="menuOpenFor === (col.field + '')" (click)="$event.stopPropagation()">
+                <button type="button" (click)="sortAsc(col)">Sort Ascending</button>
+                <button type="button" (click)="sortDesc(col)">Sort Descending</button>
+                <button type="button" (click)="clearSort(col)">Clear Sort</button>
+                <hr />
+                <button type="button" (click)="clearFilterFor(col)">Clear Filter</button>
+                <button type="button" (click)="clearFilters()">Clear All Filters</button>
+            </div>
             <span class="og-grid-resizer" (mousedown)="onResizeStart($event, col)"></span>
         </div>
     </div>
