@@ -16,13 +16,13 @@
     </div>
 
     <div class="og-grid-header">
-        <div class="og-grid-header-cell og-grid-select" *ngIf="showSelectionColumn">
+        <div class="og-grid-header-cell og-grid-select" *ngIf="showSelectionColumn && showSelection">
             <input type="checkbox" [checked]="allSelected" (change)="toggleAll()" />
         </div>
 
         <div class="og-grid-header-cell" *ngFor="let col of mergedCols; let ci = index; trackBy: trackByCol"
-            [style.width.px]="getColWidth(col)" (click)="onHeaderClick(col, $event)" [class.og-grid-sortable]="!!col.sortable"
-            title="Click to sort">
+            [style.width.px]="getColWidth(col)" (click)="onHeaderClick(col, $event)"
+            [class.og-grid-sortable]="!!col.sortable" title="Click to sort">
             <span class="og-grid-header-title">
                 {{ col.headerName || (col.field + '') }}
             </span>
@@ -44,13 +44,15 @@
 
     <div class="og-grid-pivot-panel" *ngIf="showPivotPanel">
         <div class="og-grid-pivot-toggle">
-            <label><input type="checkbox" [(ngModel)]="pivotModel.enabled" (ngModelChange)="onPivotToggle($event)" /> Pivot Mode</label>
+            <label><input type="checkbox" [(ngModel)]="pivotModel.enabled" (ngModelChange)="onPivotToggle($event)" />
+                Pivot Mode</label>
         </div>
         <div class="og-grid-pivot-section">
             <div class="og-grid-pivot-title">Pivot Column</div>
             <select [(ngModel)]="pivotModel.pivotCol" (ngModelChange)="onPivotConfigChange($event)">
                 <option [ngValue]="undefined">None</option>
-                <option *ngFor="let col of columnDefs" [ngValue]="col.field">{{ col.headerName || (col.field + '') }}</option>
+                <option *ngFor="let col of columnDefs" [ngValue]="col.field">{{ col.headerName || (col.field + '') }}
+                </option>
             </select>
         </div>
         <div class="og-grid-pivot-section">
@@ -78,11 +80,11 @@
             <button type="button" class="og-grid-btn" (click)="clearFilters()">Clear</button>
         </div>
 
-        <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol" [style.width.px]="getColWidth(col)">
+        <div class="og-grid-filter-cell" *ngFor="let col of mergedCols; trackBy: trackByCol"
+            [style.width.px]="getColWidth(col)">
             <ng-container [ngSwitch]="col.filter || 'text'">
                 <ng-container *ngSwitchCase="'text'">
-                    <input type="text" placeholder="Filter..."
-                        [ngModel]="filterInputs[col.field]?.value || ''"
+                    <input type="text" placeholder="Filter..." [ngModel]="filterInputs[col.field]?.value || ''"
                         (ngModelChange)="onTextFilterInput(col, $event, true)" />
                     <div class="og-grid-filter-mode-row">
                         <select (change)="onTextModeChange(col, $any($event.target).value)">
@@ -94,35 +96,29 @@
                 </ng-container>
 
                 <div *ngSwitchCase="'number'" class="og-grid-filter-range">
-                    <input type="number" placeholder="Min"
-                        [ngModel]="filterInputs[col.field]?.value || ''"
+                    <input type="number" placeholder="Min" [ngModel]="filterInputs[col.field]?.value || ''"
                         (ngModelChange)="onRangeInput(col, 'min', $event)" />
-                    <input type="number" data-max placeholder="Max"
-                        [ngModel]="filterInputs[col.field]?.valueTo || ''"
+                    <input type="number" data-max placeholder="Max" [ngModel]="filterInputs[col.field]?.valueTo || ''"
                         (ngModelChange)="onRangeInput(col, 'max', $event)" />
                 </div>
 
                 <div *ngSwitchCase="'date'" class="og-grid-filter-range">
-                    <input type="date" placeholder="From"
-                        [ngModel]="filterInputs[col.field]?.value || ''"
+                    <input type="date" placeholder="From" [ngModel]="filterInputs[col.field]?.value || ''"
                         (ngModelChange)="onRangeInput(col, 'min', $event)" />
-                    <input type="date" data-max placeholder="To"
-                        [ngModel]="filterInputs[col.field]?.valueTo || ''"
+                    <input type="date" data-max placeholder="To" [ngModel]="filterInputs[col.field]?.valueTo || ''"
                         (ngModelChange)="onRangeInput(col, 'max', $event)" />
                 </div>
 
                 <input *ngSwitchDefault type="text" placeholder="Filter..."
-                    [ngModel]="filterInputs[col.field]?.value || ''"
-                    (ngModelChange)="onFilterChange(col, $event)" />
+                    [ngModel]="filterInputs[col.field]?.value || ''" (ngModelChange)="onFilterChange(col, $event)" />
             </ng-container>
         </div>
     </div>
 
     <div class="og-grid-body">
         <div class="og-grid-row" *ngFor="let row of viewRows; let ri = index; trackBy: trackByRow"
-            [class.og-grid-row-selected]="isRowSelected(row)"
-            [class.og-grid-group-row]="isGroupRow(row)">
-            <div class="og-grid-cell og-grid-select" *ngIf="showSelectionColumn">
+            [class.og-grid-row-selected]="isRowSelected(row)" [class.og-grid-group-row]="isGroupRow(row)">
+            <div class="og-grid-cell og-grid-select" *ngIf="showSelectionColumn && showSelection">
                 <ng-container *ngIf="!isGroupRow(row); else groupToggle">
                     <input type="checkbox" [checked]="isRowSelected(row)" (change)="toggleRowSelection(row)" />
                 </ng-container>
@@ -133,7 +129,8 @@
                 </ng-template>
             </div>
 
-            <div class="og-grid-cell" *ngFor="let col of mergedCols; let ci = index" [style.width.px]="getColWidth(col)">
+            <div class="og-grid-cell" *ngFor="let col of mergedCols; let ci = index"
+                [style.width.px]="getColWidth(col)">
                 <ng-container *ngIf="!isGroupRow(row); else groupCell">
                     {{ renderCell(col, $any(row)) }}
                 </ng-container>

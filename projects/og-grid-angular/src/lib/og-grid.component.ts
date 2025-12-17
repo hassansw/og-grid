@@ -42,6 +42,7 @@ export class OgGridComponent<T = any> implements OnInit, OnChanges {
     @Input() columnDefs: ColumnDef<T>[] = [];
     @Input() rowData: T[] = [];
     @Input() options: Partial<GridOptions<T>> = {};
+    @Input() showSelection: boolean = true; // explicit toggle for checkbox column
 
     // Optional: expose API to parent via template ref: #grid then grid.api.exportCsv()
     api: GridApi<T>;
@@ -148,7 +149,7 @@ export class OgGridComponent<T = any> implements OnInit, OnChanges {
             let sample = data.find(r => r[k] != null)?.[k];
             const t = this.inferType(sample);
             const col: any = {
-                field: k, headerName: k, filter: true, sortable: true, resizable: true,
+                field: k, headerName: this.generateHeaderFromKey(k), filter: true, sortable: true, resizable: true,
                 enableRowGroup: true, enablePivot: true, enableValue: true
             };
             if (t === 'number') { col.aggFunc = 'sum'; }
@@ -156,6 +157,24 @@ export class OgGridComponent<T = any> implements OnInit, OnChanges {
             return col;
         });
     }
+
+    generateHeaderFromKey(key: any) {
+        return key
+            // Insert space before uppercase letters (for camelCase)
+            .replace(/([A-Z])/g, ' $1')
+            // Replace common separators with spaces
+            .replace(/[_-]/g, ' ')
+            // Handle acronyms and special cases (multiple capitals in a row)
+            .replace(/([A-Z]+)([A-Z][a-z])/g, '$1 $2')
+            // Clean up multiple spaces
+            .replace(/\s+/g, ' ')
+            // Trim and convert to title case
+            .trim()
+            .split(' ')
+            .map((word: any) => word.charAt(0).toUpperCase() + word.slice(1).toLowerCase())
+            .join(' ');
+    }
+
 
 
     @HostListener('document:click', ['$event'])
