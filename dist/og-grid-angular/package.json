@@ -1,0 +1,36 @@
+{
+  "name": "og-grid-angular",
+  "version": "0.1.0",
+  "description": "Angular grid component built on og-grid-core (sorting, filtering, grouping, pivot, CSV export)",
+  "author": "hashmove",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hashmove/og-grid"
+  },
+  "keywords": [
+    "angular",
+    "grid",
+    "table",
+    "pivot",
+    "sorting",
+    "filtering",
+    "grouping",
+    "csv"
+  ],
+  "private": false,
+  "peerDependencies": {
+    "@angular/common": "^12.2.0",
+    "@angular/core": "^12.2.0"
+  },
+  "dependencies": {
+    "tslib": "^2.3.0"
+  },
+  "main": "bundles/og-grid-angular.umd.js",
+  "module": "fesm2015/og-grid-angular.js",
+  "es2015": "fesm2015/og-grid-angular.js",
+  "esm2015": "esm2015/og-grid-angular.js",
+  "fesm2015": "fesm2015/og-grid-angular.js",
+  "typings": "og-grid-angular.d.ts",
+  "sideEffects": false
+}
