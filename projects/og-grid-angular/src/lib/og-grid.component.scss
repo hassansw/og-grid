@@ -79,6 +79,7 @@
     overflow: visible;
     text-overflow: ellipsis;
     box-sizing: border-box;
+    justify-content: space-between;
 }
 
 .og-grid-header-cell:last-child,
@@ -219,7 +220,7 @@
     border: 1px solid #ccc;
     background: #fff;
     cursor: pointer;
-    width: 100%;
+    // width: 100%;
     box-sizing: border-box;
 }
 
