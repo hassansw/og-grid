@@ -1,6 +1,24 @@
 {
   "name": "og-grid-core",
-  "version": "0.0.1",
+  "version": "0.1.0",
+  "description": "Lightweight grid core (sorting, filtering, grouping, pivot, CSV export) for Angular wrapper",
+  "author": "hashmove",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hashmove/og-grid"
+  },
+  "keywords": [
+    "grid",
+    "table",
+    "angular",
+    "pivot",
+    "sorting",
+    "filtering",
+    "grouping",
+    "csv"
+  ],
+  "private": false,
   "peerDependencies": {
     "@angular/common": "^12.2.0",
     "@angular/core": "^12.2.0"
